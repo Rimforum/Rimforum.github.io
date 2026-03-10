@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RimForum — Игровое сообщество</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red:#c0392b;--red-dark:#96281b;--red-light:#e74c3c;
+    --bg:#1a1a1a;--bg2:#222;--bg3:#2a2a2a;
+    --text:#e0e0e0;--text-dim:#888;--border:#333;--tg:#229ED9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Roboto',sans-serif;min-height:100vh;}
+
+  .topbar{background:var(--red-dark);padding:10px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+  .topbar-text{font-size:13px;flex:1;color:#fff;line-height:1.4;}
+  .btn-tg{background:var(--tg);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:background .2s;}
+  .btn-tg:hover{background:#1a7fb5;}
+  .btn-tg svg{width:16px;height:16px;fill:#fff;}
+
+  nav{background:#111;padding:0 16px;display:flex;align-items:center;height:56px;border-bottom:2px solid var(--red);position:sticky;top:0;z-index:100;}
+  .logo{font-family:'Oswald',sans-serif;font-size:24px;font-weight:700;color:#fff;letter-spacing:1px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+  .logo span{color:var(--red-light);}
+  .nav-right{margin-left:auto;display:flex;gap:8px;align-items:center;}
+  .nav-btn{background:transparent;border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:4px;cursor:pointer;font-size:13px;transition:all .2s;}
+  .nav-btn:hover{border-color:var(--red);color:var(--red-light);}
+  .nav-btn.primary{background:var(--red);border-color:var(--red);color:#fff;}
+  .nav-btn.primary:hover{background:var(--red-light);}
+
+  .userbar{background:var(--bg3);padding:10px 16px;display:none;align-items:center;gap:10px;border-bottom:1px solid var(--border);font-size:13px;}
+  .userbar.visible{display:flex;}
+  .uname{color:var(--red-light);font-weight:500;}
+  .logout-btn{margin-left:auto;color:var(--text-dim);cursor:pointer;font-size:12px;}
+  .logout-btn:hover{color:var(--red-light);}
+
+  .hero{background:linear-gradient(135deg,#111 0%,#1e0a0a 50%,#111 100%);padding:32px 16px;text-align:center;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+  .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(192,57,43,.15) 0%,transparent 70%);}
+  .hero h1{font-family:'Oswald',sans-serif;font-size:28px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:2px;position:relative;}
+  .hero h1 span{display:inline-block;background:var(--red);color:#fff;padding:2px 12px;border-radius:4px;margin-top:6px;}
+  .hero p{color:var(--text-dim);font-size:13px;margin:12px auto 0;max-width:480px;line-height:1.6;position:relative;}
+  .hero-btns{display:flex;gap:10px;justify-content:center;margin-top:20px;position:relative;}
+  .btn-reg{background:var(--red);color:#fff;border:none;border-radius:6px;padding:10px 24px;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s;}
+  .btn-reg:hover{background:var(--red-light);}
+  .btn-login{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:6px;padding:10px 24px;font-size:14px;cursor:pointer;transition:all .2s;}
+  .btn-login:hover{border-color:var(--red);color:var(--red-light);}
+
+  .page{display:none;}
+  .page.active{display:block;}
+  main{max-width:720px;margin:0 auto;padding:16px;}
+
+  .section-header{background:var(--red-dark);color:#fff;padding:10px 16px;border-radius:6px 6px 0 0;font-family:'Oswald',sans-serif;font-size:16px;letter-spacing:.5px;margin-top:20px;}
+  .section-body{background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px;overflow:hidden;margin-bottom:4px;}
+  .forum-item{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .15s;}
+  .forum-item:last-child{border-bottom:none;}
+  .forum-item:hover{background:var(--bg3);}
+  .forum-icon{width:42px;height:42px;background:var(--red-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .forum-icon svg{width:20px;height:20px;fill:#fff;}
+  .forum-info{flex:1;min-width:0;}
+  .forum-info h3{font-size:14px;font-weight:500;color:#fff;}
+  .forum-meta{font-size:11px;color:var(--text-dim);margin-top:2px;}
+
+  .page-header{background:var(--bg2);border-bottom:2px solid var(--red);padding:16px;max-width:720px;margin:0 auto;}
+  .page-header h2{font-family:'Oswald',sans-serif;font-size:20px;color:#fff;}
+  .page-header p{font-size:12px;color:var(--text-dim);margin-top:4px;}
+  .page-toolbar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--bg3);border-bottom:1px solid var(--border);gap:10px;max-width:720px;margin:0 auto;}
+  .back-btn{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:6px 14px;border-radius:4px;cursor:pointer;font-size:13px;transition:all .2s;}
+  .back-btn:hover{border-color:var(--red);color:var(--red-light);}
+  .new-btn{background:var(--red);color:#fff;border:none;border-radius:6px;padding:8px 16px;font-size:13px;font-weight:500;cursor:pointer;transition:background .2s;}
+  .new-btn:hover{background:var(--red-light);}
+
+  .topic-list{max-width:720px;margin:0 auto;}
+  .topic-item{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg2);cursor:pointer;transition:background .15s;}
+  .topic-item:hover{background:var(--bg3);}
+  .topic-dot{width:10px;height:10px;background:var(--red);border-radius:50%;margin-top:5px;flex-shrink:0;}
+  .topic-body{flex:1;min-width:0;}
+  .topic-body h3{font-size:14px;color:#fff;font-weight:500;}
+  .topic-body .tmeta{font-size:11px;color:var(--text-dim);margin-top:3px;}
+  .topic-body .tmeta b{color:var(--red-light);}
+  .topic-replies{font-size:12px;color:var(--text-dim);text-align:right;flex-shrink:0;}
+  .topic-replies .rnum{color:var(--text);font-weight:500;font-size:13px;display:block;}
+  .empty-state{text-align:center;padding:40px 20px;color:var(--text-dim);background:var(--bg2);}
+  .loading{text-align:center;padding:30px;color:var(--text-dim);font-size:13px;background:var(--bg2);}
+
+  .posts-wrap{max-width:720px;margin:0 auto;}
+  .post-card{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px;}
+  .post-card.op{border-left:3px solid var(--red);}
+  .post-author{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .post-avatar{width:36px;height:36px;background:var(--red-dark);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;font-family:'Oswald',sans-serif;}
+  .pname{font-size:13px;font-weight:500;color:var(--red-light);}
+  .pdate{font-size:11px;color:var(--text-dim);}
+  .post-tag{display:inline-block;background:var(--red-dark);color:#fff;font-size:10px;padding:2px 7px;border-radius:3px;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+  .post-content{font-size:14px;line-height:1.7;color:var(--text);white-space:pre-wrap;word-break:break-word;}
+
+  .reply-box{background:var(--bg3);border-top:2px solid var(--red);padding:16px;max-width:720px;margin:0 auto;}
+  .reply-box h4{font-size:12px;color:var(--text-dim);margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px;}
+  .reply-box textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;resize:vertical;min-height:90px;font-family:'Roboto',sans-serif;transition:border-color .2s;}
+  .reply-box textarea:focus{border-color:var(--red);}
+  .send-btn{background:var(--red);color:#fff;border:none;border-radius:6px;padding:9px 20px;font-size:14px;font-weight:500;cursor:pointer;margin-top:10px;transition:background .2s;}
+  .send-btn:hover{background:var(--red-light);}
+  .send-btn:disabled{background:#555;cursor:not-allowed;}
+  .login-note{font-size:12px;color:var(--text-dim);margin-top:10px;}
+  .login-note a{color:var(--red-light);cursor:pointer;}
+
+  .overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;}
+  .overlay.active{display:flex;}
+  .modal{background:var(--bg2);border:1px solid var(--border);border-top:3px solid var(--red);border-radius:8px;padding:28px 24px;width:100%;max-width:400px;position:relative;animation:popIn .2s ease;}
+  @keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+  .modal-close{position:absolute;top:12px;right:14px;background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;line-height:1;transition:color .15s;}
+  .modal-close:hover{color:var(--red-light);}
+  .modal h2{font-family:'Oswald',sans-serif;font-size:22px;color:#fff;margin-bottom:20px;text-transform:uppercase;letter-spacing:1px;}
+  .modal h2 span{color:var(--red-light);}
+  .form-group{margin-bottom:14px;}
+  .form-group label{display:block;font-size:12px;color:var(--text-dim);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;}
+  .form-group input,.form-group textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:10px 12px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s;font-family:'Roboto',sans-serif;}
+  .form-group input:focus,.form-group textarea:focus{border-color:var(--red);}
+  .form-group textarea{resize:vertical;min-height:100px;}
+  .form-submit{width:100%;background:var(--red);color:#fff;border:none;border-radius:6px;padding:12px;font-size:15px;font-weight:500;cursor:pointer;margin-top:6px;transition:background .2s;font-family:'Roboto',sans-serif;}
+  .form-submit:hover{background:var(--red-light);}
+  .form-submit:disabled{background:#555;cursor:not-allowed;}
+  .form-switch{text-align:center;margin-top:14px;font-size:13px;color:var(--text-dim);}
+  .form-switch a{color:var(--red-light);cursor:pointer;}
+  .form-divider{text-align:center;color:var(--text-dim);font-size:12px;margin:16px 0;position:relative;}
+  .form-divider::before,.form-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border);}
+  .form-divider::before{left:0;}.form-divider::after{right:0;}
+  .btn-google{width:100%;background:#fff;color:#333;border:1px solid #ddd;border-radius:6px;padding:10px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s;font-family:'Roboto',sans-serif;}
+  .btn-google:hover{background:#f5f5f5;}
+  .msg{font-size:13px;padding:10px 12px;border-radius:5px;margin-top:10px;display:none;}
+  .msg.success{background:rgba(46,204,113,.15);color:#2ecc71;border:1px solid rgba(46,204,113,.3);display:block;}
+  .msg.error{background:rgba(192,57,43,.15);color:var(--red-light);border:1px solid rgba(192,57,43,.3);display:block;}
+  footer{text-align:center;padding:20px;color:var(--text-dim);font-size:12px;border-top:1px solid var(--border);margin-top:30px;}
+  @media(max-width:480px){.topic-replies{display:none}}
+
+  /* FILE ATTACHMENTS */
+  .attach-list{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;}
+  .attach-img-wrap{display:inline-block;}
+  .attach-img{max-width:100%;max-height:240px;border-radius:6px;border:1px solid var(--border);cursor:pointer;}
+  .attach-file{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:7px 12px;font-size:12px;color:var(--text);text-decoration:none;transition:border-color .2s;}
+  .attach-file:hover{border-color:var(--red-light);}
+  .fsize{color:var(--text-dim);font-size:11px;}
+  .file-upload-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px dashed var(--border);border-radius:5px;padding:7px 14px;font-size:12px;color:var(--text-dim);cursor:pointer;transition:all .2s;margin-top:8px;}
+  .file-upload-btn:hover{border-color:var(--red);color:var(--red-light);}
+  .file-upload-btn input{display:none;}
+  .reply-progress{font-size:12px;color:var(--red-light);margin-top:6px;min-height:18px;}
+</style>
+</head>
+<body>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,
+  GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged,updateProfile
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import {
+  getFirestore,collection,addDoc,getDocs,doc,
+  query,orderBy,serverTimestamp,onSnapshot,where,updateDoc,increment
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey:"AIzaSyA6GmTDHLCMy8Y5Vf1_YJFPDYH8eO6PUco",
+  authDomain:"rimforum-f5618.firebaseapp.com",
+  projectId:"rimforum-f5618",
+  storageBucket:"rimforum-f5618.firebasestorage.app",
+  messagingSenderId:"427006629608",
+  appId:"1:427006629608:web:716ec3537dee64c0131b5d"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+const gp   = new GoogleAuthProvider();
+
+const CATS = [
+  {id:'cheats-general', icon:'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z', name:'Общий раздел', sec:'cheats', desc:'Общие вопросы по читам'},
+  {id:'reverse', icon:'M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z', name:'Реверс-инжиниринг', sec:'cheats', desc:'Анализ и декомпиляция'},
+  {id:'mobile-cheats', icon:'M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z', name:'Мобильные читы', sec:'cheats', desc:'Читы для Android / iOS'},
+  {id:'pc-cheats', icon:'M20 18c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2H0v2h24v-2h-4zM4 6h16v10H4V6z', name:'Компьютерные читы', sec:'cheats', desc:'Читы для ПК игр'},
+  {id:'scripts', icon:'M14.6 16.6l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4zm-5.2 0L4.8 12l4.6-4.6L8 6 2 12l6 6 1.4-1.4z', name:'Скрипты для читов', sec:'cheats', desc:'Lua, Python, AutoHotKey'},
+  {id:'programming', icon:'M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z', name:'Программирование', sec:'lab', desc:'C++, C#, Python и другие'},
+  {id:'webdev', icon:'M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm-5 14H4v-4h11v4zm0-5H4V9h11v4zm5 5h-4V9h4v9z', name:'Веб-программирование', sec:'lab', desc:'HTML, JS, PHP'},
+  {id:'gamedev', icon:'M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5zm4 0c-.83 0-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5z', name:'Разработка игр', sec:'lab', desc:'Unity, Unreal, Godot'},
+  {id:'cs2', icon:'M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z', name:'Counter-Strike', sec:'games', desc:'CS2, макросы, читы'},
+  {id:'cod', icon:'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z', name:'Call of Duty', sec:'games', desc:'Warzone, MW3'},
+  {id:'apex', icon:'M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.28L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95zM11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5v-5l-2.28 2.28C7.81 18 6 15.21 6 12c0-4.08 3.05-7.44 7-7.93V2.05z', name:'Apex Legends', sec:'games', desc:'Читы и макросы'},
+  {id:'dayz', icon:'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z', name:'DayZ', sec:'games', desc:'Aimbot, ESP'},
+];
+
+let curUser=null, curCat=null, curTopicId=null, unsubPosts=null;
+
+onAuthStateChanged(auth,u=>{
+  curUser=u;
+  const ub=document.getElementById('userbar');
+  const un=document.getElementById('uname');
+  if(u){ub.classList.add('visible');un.textContent=u.displayName||u.email;}
+  else ub.classList.remove('visible');
+});
+
+// ---- PAGES ----
+window.showPage=id=>{
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+};
+window.goHome=()=>{
+  if(unsubPosts){unsubPosts();unsubPosts=null;}
+  curCat=null;curTopicId=null;showPage('pg-home');
+};
+window.openCat=catId=>{
+  curCat=CATS.find(c=>c.id===catId);
+  if(!curCat)return;
+  document.getElementById('cat-title').textContent=curCat.name;
+  document.getElementById('cat-desc').textContent=curCat.desc;
+  showPage('pg-section');
+  loadTopics(catId);
+};
+window.goBackToSection=()=>{
+  if(unsubPosts){unsubPosts();unsubPosts=null;}
+  showPage('pg-section');
+  if(curCat)loadTopics(curCat.id);
+};
+window.openTopic=id=>{
+  curTopicId=id;
+  showPage('pg-topic');
+  loadPosts(id);
+};
+
+// ---- LOAD TOPICS ----
+async function loadTopics(catId){
+  const el=document.getElementById('topic-list');
+  el.innerHTML='<div class="loading">⏳ Загрузка тем...</div>';
+  try{
+    const q=query(collection(db,'topics'),where('catId','==',catId),orderBy('createdAt','desc'));
+    const snap=await getDocs(q);
+    if(snap.empty){
+      el.innerHTML='<div class="empty-state"><p style="font-size:15px;margin-bottom:8px">😶 Тем пока нет</p><small style="font-size:12px">Будь первым — создай тему!</small></div>';
+      return;
+    }
+    el.innerHTML='';
+    snap.forEach(d=>{
+      const t=d.data();
+      const date=t.createdAt?new Date(t.createdAt.seconds*1000).toLocaleDateString('ru'):'—';
+      el.innerHTML+=`<div class="topic-item" onclick="openTopic('${d.id}')">
+        <div class="topic-dot"></div>
+        <div class="topic-body">
+          <h3>${esc(t.title)}</h3>
+          <div class="tmeta">Автор: <b>${esc(t.authorName)}</b> · ${date}</div>
+        </div>
+        <div class="topic-replies"><span class="rnum">${t.replies||0}</span><span>ответов</span></div>
+      </div>`;
+    });
+  }catch(e){
+    el.innerHTML=`<div class="empty-state"><p>⚠ Ошибка: ${esc(e.message)}</p><small>Проверь настройки Firestore (Rules)</small></div>`;
+  }
+}
+
+// ---- LOAD POSTS ----
+function loadPosts(topicId){
+  const c=document.getElementById('posts-wrap');
+  const titleEl=document.getElementById('topic-title-text');
+  c.innerHTML='<div class="loading">⏳ Загрузка...</div>';
+  if(unsubPosts)unsubPosts();
+  const q=query(collection(db,'topics',topicId,'posts'),orderBy('createdAt','asc'));
+  unsubPosts=onSnapshot(q,snap=>{
+    if(snap.empty){c.innerHTML='<div class="loading">Нет сообщений</div>';return;}
+    c.innerHTML='';
+    snap.docs.forEach((d,i)=>{
+      const p=d.data();
+      if(i===0&&titleEl)titleEl.textContent=p.topicTitle||'Тема';
+      const date=p.createdAt?new Date(p.createdAt.seconds*1000).toLocaleString('ru'):'—';
+      const ini=(p.authorName||'?')[0].toUpperCase();
+      c.innerHTML+=`<div class="post-card${i===0?' op':''}">
+        <div class="post-author">
+          <div class="post-avatar">${ini}</div>
+          <div><div class="pname">${esc(p.authorName)}</div><div class="pdate">${date}</div></div>
+        </div>
+        ${i===0?'<span class="post-tag">Автор темы</span><br>':''}
+        ${p.content?`<div class="post-content">${esc(p.content)}</div>`:''}
+        ${renderAttachments(p.attachments)}
+      </div>`;
+    });
+    // Показываем/скрываем поле ответа
+    const rb=document.getElementById('reply-input-wrap');
+    const note=document.getElementById('login-note');
+    if(curUser){rb.style.display='block';note.style.display='none';}
+    else{rb.style.display='none';note.style.display='block';}
+  });
+}
+
+// ---- NEW TOPIC ----
+window.openNewTopic=()=>{
+  if(!curUser){openModal('login');return;}
+  document.getElementById('nt-title').value='';
+  document.getElementById('nt-body').value='';
+  document.getElementById('nt-msg').className='msg';
+  document.getElementById('new-topic-ov').classList.add('active');
+};
+window.closeNT=()=>document.getElementById('new-topic-ov').classList.remove('active');
+
+window.submitNewTopic=async()=>{
+  if(!curUser)return;
+  const title=document.getElementById('nt-title').value.trim();
+  const body=document.getElementById('nt-body').value.trim();
+  const fi=document.getElementById('nt-file');
+  const msg=document.getElementById('nt-msg');
+  const btn=document.getElementById('nt-btn');
+  msg.className='msg';
+  if(!title||!body){msg.className='msg error';msg.textContent='⚠ Заполни оба поля';return;}
+  btn.disabled=true;btn.textContent='Создаём...';
+  try{
+    let attachments=[];
+    if(fi&&fi.files[0]){
+      msg.className='msg success';msg.textContent='⏳ Подготовка файла...';
+      attachments=[await fileToBase64(fi.files[0])];
+    }
+    const topicRef=await addDoc(collection(db,'topics'),{
+      catId:curCat.id,title,
+      authorId:curUser.uid,authorName:curUser.displayName||curUser.email,
+      replies:0,createdAt:serverTimestamp()
+    });
+    await addDoc(collection(db,'topics',topicRef.id,'posts'),{
+      topicTitle:title,content:body,attachments,
+      authorId:curUser.uid,authorName:curUser.displayName||curUser.email,
+      createdAt:serverTimestamp()
+    });
+    msg.className='msg success';msg.textContent='✓ Тема создана!';
+    setTimeout(()=>{closeNT();loadTopics(curCat.id);},1200);
+  }catch(e){
+    msg.className='msg error';msg.textContent='⚠ '+e.message;
+  }finally{btn.disabled=false;btn.textContent='Создать тему';}
+};
+
+// ---- FILE → BASE64 (бесплатно, без Storage) ----
+const MAX_FILE_MB = 0.8; // Firestore лимит ~1MB на документ
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    if (file.size > MAX_FILE_MB * 1024 * 1024) {
+      reject(new Error(`Файл слишком большой. Максимум ${MAX_FILE_MB}MB`));
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => resolve({
+      data: e.target.result,   // base64 data URL
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function formatFileSize(b) {
+  if(b<1024) return b+'B';
+  if(b<1048576) return (b/1024).toFixed(1)+'KB';
+  return (b/1048576).toFixed(1)+'MB';
+}
+
+function renderAttachments(files) {
+  if(!files||!files.length) return '';
+  return '<div class="attach-list">'+files.map(f => {
+    const isImg = f.type && f.type.startsWith('image/');
+    if(isImg) return `<a href="${f.data}" target="_blank" class="attach-img-wrap"><img src="${f.data}" class="attach-img" alt="${esc(f.name)}"></a>`;
+    const icon = /\.(zip|rar|7z)$/i.test(f.name)?'📦':/\.(exe|dll)$/i.test(f.name)?'⚙️':'📎';
+    return `<a href="${f.data}" download="${esc(f.name)}" class="attach-file">${icon} ${esc(f.name)} <span class="fsize">${formatFileSize(f.size)}</span></a>`;
+  }).join('')+'</div>';
+}
+
+// ---- REPLY ----
+window.sendReply=async()=>{
+  if(!curUser){openModal('login');return;}
+  const ta=document.getElementById('reply-text');
+  const btn=document.getElementById('reply-btn');
+  const fi=document.getElementById('reply-file');
+  const prog=document.getElementById('reply-progress');
+  const text=ta.value.trim();
+  const file=fi&&fi.files[0]||null;
+  if(!text&&!file){prog.textContent='⚠ Напиши текст или прикрепи файл';return;}
+  btn.disabled=true;btn.textContent='Отправляем...';
+  prog.textContent='';
+  try{
+    let attachments=[];
+    if(file){
+      prog.textContent='⏳ Подготовка файла...';
+      attachments=[await fileToBase64(file)];
+      prog.textContent='';
+    }
+    await addDoc(collection(db,'topics',curTopicId,'posts'),{
+      content:text||'',
+      attachments,
+      authorId:curUser.uid,
+      authorName:curUser.displayName||curUser.email,
+      createdAt:serverTimestamp()
+    });
+    await updateDoc(doc(db,'topics',curTopicId),{replies:increment(1)});
+    ta.value='';
+    if(fi)fi.value='';
+    document.getElementById('file-preview').innerHTML='';
+    prog.textContent='';
+  }catch(e){prog.textContent='⚠ '+e.message;}
+  finally{btn.disabled=false;btn.textContent='Отправить';}
+};
+
+// ---- AUTH ----
+window.doRegister=async()=>{
+  const nick=document.getElementById('reg-nick').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const pass=document.getElementById('reg-pass').value;
+  const msg=document.getElementById('reg-msg');
+  msg.className='msg';
+  if(!nick||!email||!pass){msg.className='msg error';msg.textContent='⚠ Заполни все поля';return;}
+  if(pass.length<6){msg.className='msg error';msg.textContent='⚠ Пароль минимум 6 символов';return;}
+  const btn=document.querySelector('#modal-reg .form-submit');
+  btn.disabled=true;btn.textContent='Создаём...';
+  try{
+    const c=await createUserWithEmailAndPassword(auth,email,pass);
+    await updateProfile(c.user,{displayName:nick});
+    msg.className='msg success';msg.textContent='✓ Добро пожаловать, '+nick+'!';
+    setTimeout(()=>closeModal(),1500);
+  }catch(e){
+    let t='Ошибка';
+    if(e.code==='auth/email-already-in-use')t='⚠ Email уже занят';
+    if(e.code==='auth/invalid-email')t='⚠ Неверный email';
+    if(e.code==='auth/weak-password')t='⚠ Слишком простой пароль';
+    msg.className='msg error';msg.textContent=t;
+  }finally{btn.disabled=false;btn.textContent='Создать аккаунт';}
+};
+
+window.doLogin=async()=>{
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-pass').value;
+  const msg=document.getElementById('login-msg');
+  msg.className='msg';
+  if(!email||!pass){msg.className='msg error';msg.textContent='⚠ Заполни все поля';return;}
+  const btn=document.querySelector('#modal-login .form-submit');
+  btn.disabled=true;btn.textContent='Входим...';
+  try{
+    await signInWithEmailAndPassword(auth,email,pass);
+    msg.className='msg success';msg.textContent='✓ Вход выполнен!';
+    setTimeout(()=>closeModal(),900);
+  }catch(e){
+    let t='⚠ Неверный email или пароль';
+    if(e.code==='auth/too-many-requests')t='⚠ Слишком много попыток';
+    msg.className='msg error';msg.textContent=t;
+  }finally{btn.disabled=false;btn.textContent='Войти';}
+};
+
+window.doGoogle=async()=>{
+  try{await signInWithPopup(auth,gp);closeModal();}
+  catch(e){if(e.code==='auth/popup-blocked')alert('Разреши всплывающие окна!');}
+};
+window.doLogout=async()=>await signOut(auth);
+
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;
+  const ov=document.getElementById('modal-overlay');
+  if(!ov.classList.contains('active'))return;
+  if(document.getElementById('modal-reg').style.display!=='none')window.doRegister();
+  else window.doLogin();
+});
+
+function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML;}
+
+// File preview
+window.previewFile=function(inputId,previewId){
+  const fi=document.getElementById(inputId);
+  const pv=document.getElementById(previewId);
+  const file=fi.files[0];
+  if(!file){pv.innerHTML='';return;}
+  const isImg=/\.(jpg|jpeg|png|gif|webp)$/i.test(file.name);
+  if(isImg){
+    const reader=new FileReader();
+    reader.onload=e=>pv.innerHTML=`<img src="${e.target.result}" style="max-height:120px;border-radius:6px;margin-top:8px;border:1px solid var(--border)">`;
+    reader.readAsDataURL(file);
+  } else {
+    pv.innerHTML=`<div class="attach-file" style="margin-top:8px;display:inline-flex">📎 ${esc(file.name)} <span class="fsize">${formatFileSize(file.size)}</span></div>`;
+  }
+};
+
+// ---- RENDER HOME ----
+function renderHome(){
+  const g=(sec,title,emoji)=>`
+    <div class="section-header">${emoji} ${title}</div>
+    <div class="section-body">
+    ${CATS.filter(c=>c.sec===sec).map(c=>`
+      <div class="forum-item" onclick="openCat('${c.id}')">
+        <div class="forum-icon"><svg viewBox="0 0 24 24"><path d="${c.icon}"/></svg></div>
+        <div class="forum-info"><h3>${c.name}</h3><div class="forum-meta">${c.desc}</div></div>
+      </div>`).join('')}
+    </div>`;
+  document.getElementById('home-body').innerHTML=
+    g('cheats','Разработка читов и скриптов','⚔️')+
+    g('lab','Лаборатория разработчиков','🔬')+
+    g('games','Игровой раздел','🌍');
+}
+renderHome();
+</script>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-text">Подписывайся на Telegram — новости, читы, апдейты!</div>
+  <a href="https://t.me/squadrim1" target="_blank" class="btn-tg">
+    <svg viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.833.932z"/></svg>
+    Перейти в Telegram
+  </a>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="goHome()">🎮 <span>Rim</span>Forum</div>
+  <div class="nav-right">
+    <button class="nav-btn" onclick="openModal('login')">Вход</button>
+    <button class="nav-btn primary" onclick="openModal('reg')">Регистрация</button>
+  </div>
+</nav>
+
+<!-- USERBAR -->
+<div class="userbar" id="userbar">
+  <span>👤 <span class="uname" id="uname"></span></span>
+  <span class="logout-btn" onclick="doLogout()">Выйти</span>
+</div>
+
+<!-- PAGE HOME -->
+<div class="page active" id="pg-home">
+  <div class="hero">
+    <h1>ДОБРО ПОЖАЛОВАТЬ НА<br><span>RIMFORUM.BIZ</span></h1>
+    <p>Русскоязычное игровое сообщество. Читы, скрипты, реверс-инжиниринг. Бесплатно.</p>
+    <div class="hero-btns">
+      <button class="btn-reg" onclick="openModal('reg')">Регистрация</button>
+      <button class="btn-login" onclick="openModal('login')">Вход</button>
+    </div>
+  </div>
+  <main id="home-body"></main>
+  <footer>© 2025 RimForum — Сайт читов, скриптов и кодов для онлайн игр</footer>
+</div>
+
+<!-- PAGE SECTION -->
+<div class="page" id="pg-section">
+  <div class="page-header">
+    <h2 id="cat-title"></h2>
+    <p id="cat-desc"></p>
+  </div>
+  <div class="page-toolbar">
+    <button class="back-btn" onclick="goHome()">← Назад</button>
+    <button class="new-btn" onclick="openNewTopic()">+ Новая тема</button>
+  </div>
+  <div class="topic-list" id="topic-list"></div>
+</div>
+
+<!-- PAGE TOPIC -->
+<div class="page" id="pg-topic">
+  <div class="page-header">
+    <h2 id="topic-title-text">Тема</h2>
+  </div>
+  <div class="page-toolbar">
+    <button class="back-btn" onclick="goBackToSection()">← К темам</button>
+  </div>
+  <div class="posts-wrap" id="posts-wrap"></div>
+  <div class="reply-box">
+    <h4>Написать ответ</h4>
+    <div id="reply-input-wrap" style="display:none">
+      <textarea id="reply-text" placeholder="Твой ответ..."></textarea>
+      <label class="file-upload-btn">
+        📎 Прикрепить файл
+        <input type="file" id="reply-file" accept="*/*" onchange="previewFile('reply-file','file-preview')">
+      </label>
+      <div id="file-preview"></div>
+      <br>
+      <button class="send-btn" id="reply-btn" onclick="sendReply()">Отправить</button>
+      <div class="reply-progress" id="reply-progress"></div>
+    </div>
+    <div id="login-note" class="login-note" style="display:none">
+      <a onclick="openModal('login')">Войди в аккаунт</a>, чтобы оставить ответ
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-reg">
+      <h2>Регистрация на <span>RimForum</span></h2>
+      <div class="form-group"><label>Никнейм</label><input type="text" id="reg-nick" placeholder="Игровой ник"/></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="example@mail.com"/></div>
+      <div class="form-group"><label>Пароль</label><input type="password" id="reg-pass" placeholder="Минимум 6 символов"/></div>
+      <button class="form-submit" onclick="doRegister()">Создать аккаунт</button>
+      <div class="form-divider">или</div>
+      <button class="btn-google" onclick="doGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Войти через Google
+      </button>
+      <div id="reg-msg" class="msg"></div>
+      <div class="form-switch">Уже есть аккаунт? <a onclick="switchModal('login')">Войти</a></div>
+    </div>
+    <div id="modal-login" style="display:none">
+      <h2>Вход на <span>RimForum</span></h2>
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="example@mail.com"/></div>
+      <div class="form-group"><label>Пароль</label><input type="password" id="login-pass" placeholder="Твой пароль"/></div>
+      <button class="form-submit" onclick="doLogin()">Войти</button>
+      <div class="form-divider">или</div>
+      <button class="btn-google" onclick="doGoogle()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Войти через Google
+      </button>
+      <div id="login-msg" class="msg"></div>
+      <div class="form-switch">Нет аккаунта? <a onclick="switchModal('reg')">Зарегистрироваться</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW TOPIC MODAL -->
+<div class="overlay" id="new-topic-ov">
+  <div class="modal">
+    <button class="modal-close" onclick="closeNT()">✕</button>
+    <h2>Новая <span>тема</span></h2>
+    <div class="form-group"><label>Заголовок</label><input type="text" id="nt-title" placeholder="Коротко о сути"/></div>
+    <div class="form-group"><label>Текст</label><textarea id="nt-body" placeholder="Опиши подробнее..."></textarea></div>
+    <div class="form-group">
+      <label>Файл (необязательно)</label>
+      <label class="file-upload-btn" style="width:100%;justify-content:center;">
+        📎 Выбрать файл
+        <input type="file" id="nt-file" accept="*/*" onchange="previewFile('nt-file','nt-preview')">
+      </label>
+      <div id="nt-preview"></div>
+    </div>
+    <button class="form-submit" id="nt-btn" onclick="submitNewTopic()">Создать тему</button>
+    <div id="nt-msg" class="msg"></div>
+  </div>
+</div>
+
+<script>
+  function openModal(t){document.getElementById('modal-overlay').classList.add('active');switchModal(t);}
+  function closeModal(){document.getElementById('modal-overlay').classList.remove('active');}
+  function switchModal(t){
+    document.getElementById('modal-reg').style.display=t==='reg'?'block':'none';
+    document.getElementById('modal-login').style.display=t==='login'?'block':'none';
+  }
+  document.getElementById('modal-overlay').addEventListener('click',function(e){if(e.target===this)closeModal();});
+  document.getElementById('new-topic-ov').addEventListener('click',function(e){if(e.target===this)closeNT();});
+</script>
+</body>
+</html>
